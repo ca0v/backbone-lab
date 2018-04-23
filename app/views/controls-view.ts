@@ -1,8 +1,12 @@
+import _ = require("underscore");
 import Marionette from "backbone.marionette";
 import Backbone from "backbone";
 
 interface ControlModel extends Backbone.Model {
     id: string;
+    get(id: "Commands"): {
+        Commands: ControlModel[],
+    };
     get(id: "Controls"): {
         Controls: ControlModel[],
     };
@@ -15,11 +19,20 @@ interface ControlModel extends Backbone.Model {
  * Renders a nested control collection using a TreeView
  */
 export class ControlView extends Marionette.View<ControlModel> {
-    template = _.template(`<div class="control-view"><div class="control-view-body"><%= id %></div><div class="children"></div></div>`);
+    template = _.template(`
+    <div class="control-view">
+        <div class="control-view-body"><%= id %></div>
+        <div class="control-commands"></div>
+        <div class="children"></div>
+    </div>`);
 
     constructor(options = {}) {
         super(options);
         this.addRegions({
+            "commands": {
+                el: ".control-commands",
+                replaceElement: false,
+            },
             "children": {
                 el: ".children",
                 replaceElement: true,
@@ -28,9 +41,17 @@ export class ControlView extends Marionette.View<ControlModel> {
     }
 
     onRender() {
+
+        let commands = this.model.get("Commands");
+        if (commands) {
+            this.showChildView("commands", new CommandsView({
+                collection: new Backbone.Collection(commands.Commands.map(c => new Backbone.Model(c))),
+            }));
+        }
+
         let controls = this.model.get("Controls");
         if (controls) {
-            return this.showChildView("children", new ControlsView({
+            this.showChildView("children", new ControlsView({
                 collection: new Backbone.Collection(controls.Controls.map(c => new Backbone.Model(c))),
             }));
         }
@@ -48,14 +69,12 @@ export class ControlView extends Marionette.View<ControlModel> {
 
 export class ControlsView extends Marionette.CollectionView<ControlModel, ControlView> {
     childView = ControlView;
-
-    buildChildView(model: ControlModel, ChildViewClass = ControlView, childViewOption: any) {
-
-        let view = new ChildViewClass({
-            model: model
-        });
-
-        return view;
-    }
-
 } 
+
+export class CommandsView extends Marionette.CollectionView<any, CommandView> {
+    childView = CommandView;
+}
+
+export class CommandView extends Marionette.View<any> {
+    template = _.template(`<input type="button" class="command" value="<%= id %>" />`);
+}

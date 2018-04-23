@@ -38,6 +38,14 @@
     right: 0.5em !important;
 }
 
+.ol-control.right-2 {
+    right: 1.5em !important;
+}
+
+.ol-control.right-3 {
+    right: 2.5em !important;
+}
+
 .ol-control.top-2 {
     top: 1.5em !important;
 }
@@ -46,11 +54,11 @@
     bottom: 1.5em !important;
 }
 
-.ol-control.right-2 {
-    right: 1.5em !important;
-}
-
 .control-view .control-view {
     border: 1px solid black;
     padding: 20px;
+}
+
+.control-view .control-commands {
+    padding: 5px;
 }
