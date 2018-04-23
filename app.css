@@ -1,3 +1,8 @@
+.map-controls {
+    top: 0.5em;
+    left: 4em;
+}
+
 .fullscreen {
     position: absolute;
     top: 0;
@@ -7,4 +12,45 @@
     padding: 0;
     margin: 0;
     overflow: hidden;
+}
+
+.ol-control.top-1 {
+    top: 0.5em !important;
+}
+
+.ol-control.bottom-1 {
+    bottom: 0.5em !important;
+}
+
+.ol-control.left-1 {
+    left: 0.5em !important;
+}
+
+.ol-control.left-2 {
+    left: 1.5em !important;
+}
+
+.ol-control.left-3 {
+    left: 2.5em !important;
+}
+
+.ol-control.right-1 {
+    right: 0.5em !important;
+}
+
+.ol-control.top-2 {
+    top: 1.5em !important;
+}
+
+.ol-control.bottom-2 {
+    bottom: 1.5em !important;
+}
+
+.ol-control.right-2 {
+    right: 1.5em !important;
+}
+
+.control-view .control-view {
+    border: 1px solid black;
+    padding: 20px;
 }
