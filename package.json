@@ -2,7 +2,7 @@
   "name": "backbone-lab",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "built/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -18,5 +18,9 @@
   "homepage": "https://github.com/ca0v/backbone-lab#readme",
   "dependencies": {
     "backbone.marionette": "^3.5.1"
+  },
+  "devDependencies": {
+    "@types/backbone.marionette": "^3.3.3",
+    "@types/openlayers": "^4.6.8"
   }
 }

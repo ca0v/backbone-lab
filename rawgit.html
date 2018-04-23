@@ -1,16 +1,47 @@
 <html>
 
-<head>
+<head class="fullscreen">
+    <link rel="stylesheet" type="text/css" href="app.css" />
+    <style>
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/ol3/4.6.2/ol.css');
+    </style>
 </head>
 
-<body>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.0/underscore-min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.3.3/backbone-min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.radio/2.0.0/backbone.radio.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.marionette/3.5.1/backbone.marionette.min.js"></script>
+<body class="fullscreen">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.min.js"></script>
+
     <script>
-        debugger;
+        var globals = {};
+        (function () {
+            function getParameterByName(name, url = window.location.href) {
+                name = name.replace(/[\[\]]/g, "\\$&");
+                var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                    results = regex.exec(url);
+                if (!results) return null;
+                if (!results[2]) return '';
+                return decodeURIComponent(results[2].replace(/\+/g, " "));
+            }
+            let run = getParameterByName("run") || "app/test/index";
+            let debug = getParameterByName("debug") === "1";
+            requirejs.config({
+                // module name mapped to CDN url
+                paths: {
+                    "backbone": "https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.3.3/backbone-min",
+                    "backbone.radio": "https://cdnjs.cloudflare.com/ajax/libs/backbone.radio/2.0.0/backbone.radio.min",
+                    "backbone.marionette": "https://cdnjs.cloudflare.com/ajax/libs/backbone.marionette/3.5.1/backbone.marionette.min",
+                    "jquery": "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min",
+                    "openlayers": debug ? "https://cdnjs.cloudflare.com/ajax/libs/ol3/4.6.2/ol-debug" : "https://cdnjs.cloudflare.com/ajax/libs/ol3/4.6.2/ol",
+                    "underscore": "https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.0/underscore-min",
+                },
+                deps: ["built/index"],
+                callback: function () {
+                    globals.debug = debug;
+                    require([run], function (go) { go() });
+                }
+            });
+        })();
     </script>
+
 </body>
 
 </html>
