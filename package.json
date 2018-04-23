@@ -1,0 +1,22 @@
+{
+  "name": "backbone-lab",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ca0v/backbone-lab.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ca0v/backbone-lab/issues"
+  },
+  "homepage": "https://github.com/ca0v/backbone-lab#readme",
+  "dependencies": {
+    "backbone.marionette": "^3.5.1"
+  }
+}
