@@ -1,6 +1,7 @@
 import _ = require("underscore");
 import Marionette from "backbone.marionette";
 import Backbone from "backbone";
+import { CommandsView } from "./commands-view";
 
 interface ControlModel extends Backbone.Model {
     id: string;
@@ -21,7 +22,7 @@ interface ControlModel extends Backbone.Model {
 export class ControlView extends Marionette.View<ControlModel> {
     template = _.template(`
     <div class="control-view">
-        <div class="control-view-body"><%= id %></div>
+        <div class="placeholder"><%= id %></div>
         <div class="control-commands"></div>
         <div class="children"></div>
     </div>`);
@@ -29,6 +30,10 @@ export class ControlView extends Marionette.View<ControlModel> {
     constructor(options = {}) {
         super(options);
         this.addRegions({
+            "placeholder": {
+                el: ".placeholder",
+                replaceElement: true,
+            },
             "commands": {
                 el: ".control-commands",
                 replaceElement: false,
@@ -55,6 +60,7 @@ export class ControlView extends Marionette.View<ControlModel> {
                 collection: new Backbone.Collection(controls.Controls.map(c => new Backbone.Model(c))),
             }));
         }
+
     }
 
     getOption(id: string) {
@@ -69,12 +75,26 @@ export class ControlView extends Marionette.View<ControlModel> {
 
 export class ControlsView extends Marionette.CollectionView<ControlModel, ControlView> {
     childView = ControlView;
-} 
 
-export class CommandsView extends Marionette.CollectionView<any, CommandView> {
-    childView = CommandView;
-}
+    buildChildView(child: ControlModel, childViewClass: { new(...args: any[]): ControlView }, childViewOptions: Marionette.ViewOptions<ControlModel>) {
+        // the child "mid" can be instantiated and rendered inside this placeholder-view
+        let childView = new childViewClass(_.extend({
+            model: child
+        }, childViewOptions));
 
-export class CommandView extends Marionette.View<any> {
-    template = _.template(`<input type="button" class="command" value="<%= id %>" />`);
+        let mid = child.get("mid");
+        if (mid) {
+            requirejs([mid], (controller: Controller) => {
+                //let el = document.createElement("div");
+                //childView.$(".placeholder").append(el);
+                let el = childView.$(".placeholder")[0];
+                controller.createView(child).then(view => {
+                    view.setElement(el);
+                    view.render();
+                });
+            });
+        }
+
+        return childView;
+    }
 }
