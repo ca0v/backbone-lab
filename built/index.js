@@ -170,24 +170,6 @@ define("app/views/controls-view", ["require", "exports", "underscore", "backbone
     }
     exports.ControlsView = ControlsView;
 });
-define("app/controls/ags-geoquery-form-tool", ["require", "exports", "underscore", "app/views/controls-view"], function (require, exports, _, controls_view_1) {
-    "use strict";
-    class View extends controls_view_1.ControlView {
-        constructor() {
-            super(...arguments);
-            this.template = _.template("<div><label>AGS-GEOQUERY-FORM</label></div>");
-        }
-    }
-    function createView(options) {
-        let d = $.Deferred();
-        let view = new View(options);
-        d.resolve(view);
-        return d;
-    }
-    return {
-        createView: createView
-    };
-});
 define("app/controls/base-control", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -214,7 +196,18 @@ define("app/controls/base-control", ["require", "exports"], function (require, e
     }
     exports.Controller = Controller;
 });
-define("app/controls/grid", ["require", "exports", "underscore", "app/views/controls-view"], function (require, exports, _, controls_view_2) {
+define("app/controls/ags-geoquery-form-tool", ["require", "exports", "underscore", "app/views/controls-view", "app/controls/base-control"], function (require, exports, _, controls_view_1, base_control_1) {
+    "use strict";
+    class View extends controls_view_1.ControlView {
+        constructor() {
+            super(...arguments);
+            this.template = _.template("<div><label>AGS-GEOQUERY-FORM</label></div>");
+        }
+    }
+    let controller = new base_control_1.Controller({ view: View });
+    return controller;
+});
+define("app/controls/grid", ["require", "exports", "underscore", "app/views/controls-view", "app/controls/base-control"], function (require, exports, _, controls_view_2, base_control_2) {
     "use strict";
     class View extends controls_view_2.ControlView {
         constructor() {
@@ -222,17 +215,10 @@ define("app/controls/grid", ["require", "exports", "underscore", "app/views/cont
             this.template = _.template(`<div class="grid"><label>GRID</label></div>`);
         }
     }
-    function createView(options) {
-        let d = $.Deferred();
-        let view = new View(options);
-        d.resolve(view);
-        return d;
-    }
-    return {
-        createView: createView
-    };
+    let controller = new base_control_2.Controller({ view: View });
+    return controller;
 });
-define("app/controls/ol3-control", ["require", "exports", "openlayers", "underscore", "app/views/controls-view", "app/controls/base-control"], function (require, exports, openlayers_1, _, controls_view_3, base_control_1) {
+define("app/controls/ol3-control", ["require", "exports", "openlayers", "underscore", "app/views/controls-view", "app/controls/base-control"], function (require, exports, openlayers_1, _, controls_view_3, base_control_3) {
     "use strict";
     openlayers_1 = __importDefault(openlayers_1);
     class View extends controls_view_3.ControlView {
@@ -252,7 +238,7 @@ define("app/controls/ol3-control", ["require", "exports", "openlayers", "undersc
             }
         }
     }
-    let controller = new base_control_1.Controller({ view: View });
+    let controller = new base_control_3.Controller({ view: View });
     return controller;
 });
 define("app/controls/view", ["require", "exports", "underscore", "app/views/controls-view"], function (require, exports, _, controls_view_4) {
