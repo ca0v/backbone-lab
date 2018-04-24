@@ -1,15 +1,13 @@
 import _ = require("underscore");
-import {ControlView} from "../views/controls-view";
+import { ControlView } from "../views/controls-view";
 
 class View extends ControlView {
-    template = _.template("<div><label>REPLACES ORIGINAL VIEW BODY for <%= id %></label></div>")
+    template = _.template("<div><label>DEFAULT VIEW</label></div>")
 }
 
-function createView(model: Backbone.Model) {
+function createView(options: { model: Backbone.Model }) {
     let d = $.Deferred<Marionette.View<any>>();
-    let view = new View({
-        model: model,
-    });
+    let view = new View(options);
     d.resolve(view);
     return d;
 }

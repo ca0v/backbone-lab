@@ -1,9 +1,69 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
-}
+};
 define("index", ["require", "exports"], function (require, exports) {
     "use strict";
     return {};
+});
+define("app/models/command-model", ["require", "exports", "backbone"], function (require, exports, backbone_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    backbone_1 = __importDefault(backbone_1);
+    class CommandModel extends backbone_1.default.Model {
+        get id() {
+            return this.get("id");
+        }
+        get Options() {
+            return this.get("Options");
+        }
+    }
+    exports.CommandModel = CommandModel;
+    class CommandCollection extends backbone_1.default.Collection {
+        constructor() {
+            super(...arguments);
+            this.model = CommandModel;
+        }
+    }
+    exports.CommandCollection = CommandCollection;
+});
+define("app/models/control-model", ["require", "exports", "backbone"], function (require, exports, backbone_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    backbone_2 = __importDefault(backbone_2);
+    class ControlModel extends backbone_2.default.Model {
+        get id() {
+            return this.get("id");
+        }
+        get mid() {
+            return this.get("mid");
+        }
+        get commands() {
+            return this.get("Commands");
+        }
+        get controls() {
+            return this.get("Controls");
+        }
+        get options() {
+            let v = this.get("Options");
+            return (v && v.Values);
+        }
+        getOption(id) {
+            let options = this.options;
+            if (options) {
+                let value = options.find(n => n.id === id);
+                return (value && value.value);
+            }
+            return undefined;
+        }
+    }
+    exports.ControlModel = ControlModel;
+    class ControlCollection extends backbone_2.default.Collection {
+        constructor() {
+            super(...arguments);
+            this.model = ControlModel;
+        }
+    }
+    exports.ControlCollection = ControlCollection;
 });
 define("app/views/commands-view", ["require", "exports", "underscore", "backbone.marionette"], function (require, exports, _, backbone_marionette_1) {
     "use strict";
@@ -19,16 +79,15 @@ define("app/views/commands-view", ["require", "exports", "underscore", "backbone
     class CommandView extends backbone_marionette_1.default.View {
         constructor() {
             super(...arguments);
-            this.template = _.template(`<input type="button" class="command" value="<%= id %>" />`);
+            this.template = _.template(`<input type="button" class="command <%= id %>" value="<%= id %>" />`);
         }
     }
     exports.CommandView = CommandView;
 });
-define("app/views/controls-view", ["require", "exports", "underscore", "backbone.marionette", "backbone", "app/views/commands-view"], function (require, exports, _, backbone_marionette_2, backbone_1, commands_view_1) {
+define("app/views/controls-view", ["require", "exports", "underscore", "backbone.marionette", "app/views/commands-view"], function (require, exports, _, backbone_marionette_2, commands_view_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     backbone_marionette_2 = __importDefault(backbone_marionette_2);
-    backbone_1 = __importDefault(backbone_1);
     /**
      * Renders a nested control collection using a TreeView
      */
@@ -36,8 +95,8 @@ define("app/views/controls-view", ["require", "exports", "underscore", "backbone
         constructor(options = {}) {
             super(options);
             this.template = _.template(`
-    <div class="control-view">
-        <div class="placeholder"><%= id %></div>
+    <div class="control-view <%= id %>">
+        <div class="placeholder"></div>
         <div class="control-commands"></div>
         <div class="children"></div>
     </div>`);
@@ -57,46 +116,50 @@ define("app/views/controls-view", ["require", "exports", "underscore", "backbone
             });
         }
         onRender() {
-            let commands = this.model.get("Commands");
+            let commands = this.model.commands;
             if (commands) {
                 this.showChildView("commands", new commands_view_1.CommandsView({
-                    collection: new backbone_1.default.Collection(commands.Commands.map(c => new backbone_1.default.Model(c))),
+                    collection: commands,
                 }));
             }
-            let controls = this.model.get("Controls");
+            let controls = this.model.controls;
             if (controls) {
                 this.showChildView("children", new ControlsView({
-                    collection: new backbone_1.default.Collection(controls.Controls.map(c => new backbone_1.default.Model(c))),
+                    collection: controls,
+                    controller: this.getOption("controller"),
                 }));
             }
         }
         getOption(id) {
             let option = super.getOption(id);
             if (typeof option === "undefined") {
-                let options = this.model.get("Options").Values.filter(o => o.id === id);
-                option = options[0] && options[0].value;
+                return this.model.getOption(id);
             }
             return option;
         }
     }
     exports.ControlView = ControlView;
     class ControlsView extends backbone_marionette_2.default.CollectionView {
-        constructor() {
-            super(...arguments);
+        constructor(options) {
+            super(options);
             this.childView = ControlView;
         }
         buildChildView(child, childViewClass, childViewOptions) {
             // the child "mid" can be instantiated and rendered inside this placeholder-view
             let childView = new childViewClass(_.extend({
+                controller: this.getOption("controller"),
                 model: child
             }, childViewOptions));
-            let mid = child.get("mid");
+            let mid = child.mid;
             if (mid) {
                 requirejs([mid], (controller) => {
                     //let el = document.createElement("div");
                     //childView.$(".placeholder").append(el);
                     let el = childView.$(".placeholder")[0];
-                    controller.createView(child).then(view => {
+                    controller.createView({
+                        model: child,
+                        controller: this.getOption("controller"),
+                    }).then(view => {
                         view.setElement(el);
                         view.render();
                     });
@@ -112,34 +175,56 @@ define("app/controls/ags-geoquery-form-tool", ["require", "exports", "underscore
     class View extends controls_view_1.ControlView {
         constructor() {
             super(...arguments);
-            this.template = _.template("<div><label>REPLACES ORIGINAL VIEW BODY for <%= id %></label></div>");
+            this.template = _.template("<div><label>AGS-GEOQUERY-FORM</label></div>");
         }
     }
-    function createView(model) {
+    function createView(options) {
         let d = $.Deferred();
-        let view = new View({
-            model: model,
-        });
+        let view = new View(options);
         d.resolve(view);
         return d;
     }
     return {
         createView: createView
     };
+});
+define("app/controls/base-control", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    class Controller {
+        constructor(options) {
+            this.options = options;
+        }
+        createView(options) {
+            let d = $.Deferred();
+            let viewMid = options.model.getOption("view");
+            if (viewMid) {
+                requirejs([viewMid], (View) => {
+                    let view = new View(options);
+                    d.resolve(view);
+                });
+            }
+            else {
+                console.log("no view module identify is not defined");
+                let view = new this.options.view(options);
+                d.resolve(view);
+            }
+            return d;
+        }
+    }
+    exports.Controller = Controller;
 });
 define("app/controls/grid", ["require", "exports", "underscore", "app/views/controls-view"], function (require, exports, _, controls_view_2) {
     "use strict";
     class View extends controls_view_2.ControlView {
         constructor() {
             super(...arguments);
-            this.template = _.template("<div><label>REPLACES ORIGINAL VIEW BODY for <%= id %></label></div>");
+            this.template = _.template(`<div class="grid"><label>GRID</label></div>`);
         }
     }
-    function createView(model) {
+    function createView(options) {
         let d = $.Deferred();
-        let view = new View({
-            model: model,
-        });
+        let view = new View(options);
         d.resolve(view);
         return d;
     }
@@ -147,39 +232,40 @@ define("app/controls/grid", ["require", "exports", "underscore", "app/views/cont
         createView: createView
     };
 });
-define("app/controls/ol3-control", ["require", "exports", "underscore", "app/views/controls-view"], function (require, exports, _, controls_view_3) {
+define("app/controls/ol3-control", ["require", "exports", "openlayers", "underscore", "app/views/controls-view", "app/controls/base-control"], function (require, exports, openlayers_1, _, controls_view_3, base_control_1) {
     "use strict";
+    openlayers_1 = __importDefault(openlayers_1);
     class View extends controls_view_3.ControlView {
         constructor() {
             super(...arguments);
-            this.template = _.template("<div><label>REPLACES ORIGINAL VIEW BODY for <%= id %></label></div>");
+            this.template = _.template(`<div class="ol-control" style="position:inherit"></div>`);
+        }
+        onRender() {
+            let map = this.getOption("controller").model.get("map");
+            let controlType = this.getOption("control-type");
+            let ControlConstructor = openlayers_1.default.control[controlType];
+            if (ControlConstructor) {
+                let control = new ControlConstructor({
+                    target: this.$el[0],
+                });
+                map.addControl(control);
+            }
         }
     }
-    function createView(model) {
-        let d = $.Deferred();
-        let view = new View({
-            model: model,
-        });
-        d.resolve(view);
-        return d;
-    }
-    return {
-        createView: createView
-    };
+    let controller = new base_control_1.Controller({ view: View });
+    return controller;
 });
 define("app/controls/view", ["require", "exports", "underscore", "app/views/controls-view"], function (require, exports, _, controls_view_4) {
     "use strict";
     class View extends controls_view_4.ControlView {
         constructor() {
             super(...arguments);
-            this.template = _.template("<div><label>REPLACES ORIGINAL VIEW BODY for <%= id %></label></div>");
+            this.template = _.template("<div><label>DEFAULT VIEW</label></div>");
         }
     }
-    function createView(model) {
+    function createView(options) {
         let d = $.Deferred();
-        let view = new View({
-            model: model,
-        });
+        let view = new View(options);
         d.resolve(view);
         return d;
     }
@@ -187,10 +273,10 @@ define("app/controls/view", ["require", "exports", "underscore", "app/views/cont
         createView: createView
     };
 });
-define("app/views/map-view", ["require", "exports", "openlayers", "backbone.marionette"], function (require, exports, openlayers_1, backbone_marionette_3) {
+define("app/views/map-view", ["require", "exports", "openlayers", "backbone.marionette"], function (require, exports, openlayers_2, backbone_marionette_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    openlayers_1 = __importDefault(openlayers_1);
+    openlayers_2 = __importDefault(openlayers_2);
     backbone_marionette_3 = __importDefault(backbone_marionette_3);
     class MapView extends backbone_marionette_3.default.View {
         constructor(options) {
@@ -201,44 +287,43 @@ define("app/views/map-view", ["require", "exports", "openlayers", "backbone.mari
         }
         onRender() {
             let mapDom = this.el;
-            let map = this.map = new openlayers_1.default.Map({
+            let map = this.map = new openlayers_2.default.Map({
                 target: mapDom,
-                view: new openlayers_1.default.View({
-                    center: [-85, 35],
-                    zoom: 1,
+                view: new openlayers_2.default.View({
+                    center: this.model.get("center"),
+                    zoom: this.model.get("zoom"),
                     minZoom: 0,
                     maxZoom: 16
                 }),
                 layers: [
-                    new openlayers_1.default.layer.Tile({
-                        source: new openlayers_1.default.source.OSM(),
+                    new openlayers_2.default.layer.Tile({
+                        source: new openlayers_2.default.source.OSM(),
                     })
                 ]
             });
+            this.model.set("map", map);
         }
         addControl(controlView) {
-            if (!this.map)
+            if (!this.map) {
+                console.error("no map assigned to view");
                 return;
-            let positionName = controlView.getOption("position");
+            }
+            let positionName = controlView.getOption("position") || "top-1 left-1";
             let positionCss = "." + positionName.split(" ").join(" .");
             let controlsDom = this.$(`.map-controls`);
-            let controlDom = $(`ol-control ${positionCss}`, controlsDom);
+            let controlDom = $(`ol-control ${controlView.id} ${positionCss}`, controlsDom);
             if (!controlDom.length) {
                 let controlDom = $(`<div class="ol-control ${positionName}"></div>`)[0];
                 controlsDom.append(controlDom);
                 controlView.$el.appendTo(controlDom);
-                let control;
-                let controlType = controlView.getOption("control-type");
-                if (controlType && controlType in openlayers_1.default.control) {
-                    control = new openlayers_1.default.control[controlType]();
-                }
-                else {
-                    control = new openlayers_1.default.control.Control({
-                        element: controlDom,
-                        render: undefined,
-                        target: undefined,
-                    });
-                }
+                let control = new openlayers_2.default.control.Control({
+                    element: controlDom,
+                    render: (event) => {
+                        console.log(event);
+                        controlView.trigger("event", event);
+                    },
+                    target: undefined,
+                });
                 this.map.addControl(control);
                 controlView.render();
             }
@@ -256,20 +341,75 @@ define("app/test/data/configuration", ["require", "exports"], function (require,
     let maplet = data.data;
     return maplet;
 });
-define("app/test/index", ["require", "exports", "backbone", "app/views/map-view", "app/views/controls-view", "app/test/data/configuration"], function (require, exports, backbone_2, map_view_1, controls_view_5, configuration_1) {
+define("app/test/index", ["require", "exports", "backbone", "app/views/map-view", "app/views/controls-view", "app/models/control-model", "app/test/data/configuration", "app/models/command-model"], function (require, exports, backbone_3, map_view_1, controls_view_5, control_model_1, configuration_1, command_model_1) {
     "use strict";
-    backbone_2 = __importDefault(backbone_2);
+    backbone_3 = __importDefault(backbone_3);
     configuration_1 = __importDefault(configuration_1);
+    class MapletConverter {
+        asModel() {
+            let mapletControls = configuration_1.default.Controls.Controls.map(c => this.asControlModel(c));
+            return {
+                controls: new control_model_1.ControlCollection(mapletControls)
+            };
+        }
+        asCommandModel(command) {
+            return new command_model_1.CommandModel(command);
+        }
+        asControlModel(control) {
+            let commandCollection = new command_model_1.CommandCollection();
+            let controlCollection = new control_model_1.ControlCollection();
+            let result = new control_model_1.ControlModel({
+                id: control.id,
+                mid: control.mid,
+                Controls: controlCollection,
+                Commands: commandCollection,
+                Options: control.Options,
+            });
+            if (control.Commands) {
+                control.Commands.Commands.forEach(c => {
+                    let childModel = this.asCommandModel(c);
+                    commandCollection.add(childModel);
+                });
+            }
+            if (control.Controls) {
+                control.Controls.Controls.forEach(c => {
+                    let childModel = this.asControlModel(c);
+                    controlCollection.add(childModel);
+                });
+            }
+            return result;
+        }
+    }
+    function asModel(control) {
+        let controls = control.controls;
+        if (controls) {
+            control.set("Controls", {
+                Controls: controls.map(c => asModel(c))
+            });
+        }
+    }
     function run() {
         let mapDom = document.createElement("div");
         mapDom.className = "fullscreen map";
         document.body.appendChild(mapDom);
         let mapView = new map_view_1.MapView({
             el: mapDom,
+            model: new backbone_3.default.Model({
+                zoom: 5,
+                center: [-85, 35]
+            }),
         });
         mapView.render();
-        let rootControls = configuration_1.default.Controls.Controls.map(c => new backbone_2.default.Model(c));
-        let controlViews = rootControls.map(model => new controls_view_5.ControlView({ model: model }));
+        let converter = new MapletConverter();
+        let rootControls = converter.asModel().controls;
+        // how will the views find the map?  Assign the mapView as the controller.
+        let controlViews = rootControls.map(model => {
+            let view = new controls_view_5.ControlView({
+                model: model,
+                controller: mapView
+            });
+            return view;
+        });
         controlViews.forEach(controlView => {
             mapView.addControl(controlView);
         });

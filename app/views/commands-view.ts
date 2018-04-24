@@ -1,11 +1,11 @@
 import _ = require("underscore");
-import Backbone from "backbone";
 import Marionette from "backbone.marionette";
+import { CommandModel } from "../models/command-model";
 
-export class CommandsView extends Marionette.CollectionView<any, CommandView> {
+export class CommandsView extends Marionette.CollectionView<CommandModel, CommandView> {
     childView = CommandView;
 }
 
-export class CommandView extends Marionette.View<any> {
-    template = _.template(`<input type="button" class="command" value="<%= id %>" />`);
+export class CommandView extends Marionette.View<CommandModel> {
+    template = _.template(`<input type="button" class="command <%= id %>" value="<%= id %>" />`);
 }

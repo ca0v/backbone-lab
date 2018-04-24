@@ -62,3 +62,8 @@
 .control-view .control-commands {
     padding: 5px;
 }
+
+.ol-control .control-view .ol-scale-line {
+    position: inherit !important;
+    background-color: rgba(0,60,136,1);
+}

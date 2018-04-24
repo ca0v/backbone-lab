@@ -19,8 +19,8 @@ export class MapView extends Marionette.View<any> {
         let map = this.map = new ol.Map({
             target: mapDom,
             view: new ol.View({
-                center: [-85, 35],
-                zoom: 1,
+                center: this.model.get("center"),
+                zoom: this.model.get("zoom"),
                 minZoom: 0,
                 maxZoom: 16
             }),
@@ -31,32 +31,32 @@ export class MapView extends Marionette.View<any> {
             ]
         });
 
+        this.model.set("map", map);
+
     }
 
     addControl(controlView: Marionette.View<any>) {
-        if (!this.map) return;
-        let positionName = controlView.getOption("position");
+        if (!this.map) {
+            console.error("no map assigned to view");
+            return;
+        }
+        let positionName = controlView.getOption("position") || "top-1 left-1";
         let positionCss = "." + positionName.split(" ").join(" .");
         let controlsDom = this.$(`.map-controls`);
-        let controlDom = $(`ol-control ${positionCss}`, controlsDom);
+        let controlDom = $(`ol-control ${controlView.id} ${positionCss}`, controlsDom);
         if (!controlDom.length) {
             let controlDom = $(`<div class="ol-control ${positionName}"></div>`)[0];
             controlsDom.append(controlDom);
             controlView.$el.appendTo(controlDom);
 
-            let control: ol.control.Control;
-
-            let controlType = controlView.getOption("control-type");
-
-            if (controlType && controlType in ol.control) {
-                control = new ol.control[controlType]();
-            } else {
-                control = new ol.control.Control({
-                    element: controlDom,
-                    render: undefined,
-                    target: undefined,
-                });
-            }
+            let control = new ol.control.Control({
+                element: controlDom,
+                render: (event: ol.MapEvent) => {
+                    console.log(event);
+                    controlView.trigger("event", event);
+                },
+                target: undefined,
+            });
 
             this.map.addControl(control);
             controlView.render();
