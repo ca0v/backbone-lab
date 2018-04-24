@@ -71,7 +71,7 @@ export class ControlsView extends Marionette.CollectionView<ControlModel, Contro
     }) {
         super(options);
     }
-    
+
     buildChildView(child: ControlModel, childViewClass: { new(...args: any[]): ControlView }, childViewOptions: Marionette.ViewOptions<ControlModel>) {
         // the child "mid" can be instantiated and rendered inside this placeholder-view
         let childView = new childViewClass(_.extend({
@@ -82,13 +82,11 @@ export class ControlsView extends Marionette.CollectionView<ControlModel, Contro
         let mid = child.mid;
         if (mid) {
             requirejs([mid], (controller: Controller) => {
-                //let el = document.createElement("div");
-                //childView.$(".placeholder").append(el);
-                let el = childView.$(".placeholder")[0];
                 controller.createView({
                     model: child,
                     controller: this.getOption("controller"),
                 }).then(view => {
+                    let el = childView.$(".placeholder")[0];
                     view.setElement(el);
                     view.render();
                 });

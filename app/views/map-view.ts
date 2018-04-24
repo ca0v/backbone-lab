@@ -43,9 +43,9 @@ export class MapView extends Marionette.View<any> {
         let positionName = controlView.getOption("position") || "top-1 left-1";
         let positionCss = "." + positionName.split(" ").join(" .");
         let controlsDom = this.$(`.map-controls`);
-        let controlDom = $(`ol-control ${controlView.id} ${positionCss}`, controlsDom);
+        let controlDom = $(`map-control ${controlView.id} ${positionCss}`, controlsDom);
         if (!controlDom.length) {
-            let controlDom = $(`<div class="ol-control ${positionName}"></div>`)[0];
+            let controlDom = $(`<div class="map-control ${positionName}"></div>`)[0];
             controlsDom.append(controlDom);
             controlView.$el.appendTo(controlDom);
 

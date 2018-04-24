@@ -14,56 +14,54 @@
     overflow: hidden;
 }
 
-.ol-control.top-1 {
+.map-control {
+    position: absolute;
+}
+
+.map-control.top-1 {
     top: 0.5em !important;
 }
 
-.ol-control.bottom-1 {
+.map-control.bottom-1 {
     bottom: 0.5em !important;
 }
 
-.ol-control.left-1 {
+.map-control.left-1 {
     left: 0.5em !important;
 }
 
-.ol-control.left-2 {
+.map-control.left-2 {
     left: 1.5em !important;
 }
 
-.ol-control.left-3 {
+.map-control.left-3 {
     left: 2.5em !important;
 }
 
-.ol-control.right-1 {
+.map-control.right-1 {
     right: 0.5em !important;
 }
 
-.ol-control.right-2 {
+.map-control.right-2 {
     right: 1.5em !important;
 }
 
-.ol-control.right-3 {
+.map-control.right-3 {
     right: 2.5em !important;
 }
 
-.ol-control.top-2 {
+.map-control.top-2 {
     top: 1.5em !important;
 }
 
-.ol-control.bottom-2 {
+.map-control.bottom-2 {
     bottom: 1.5em !important;
-}
-
-.control-view .control-view {
-    border: 1px solid black;
-    padding: 20px;
 }
 
 .control-view .control-commands {
     padding: 5px;
 }
 
-.ol-control .control-view .ol-scale-line {
+.map-control .control-view .ol-scale-line {
     position: inherit !important;
-    background-color: rgba(0,60,136,1);
 }

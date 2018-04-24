@@ -153,13 +153,11 @@ define("app/views/controls-view", ["require", "exports", "underscore", "backbone
             let mid = child.mid;
             if (mid) {
                 requirejs([mid], (controller) => {
-                    //let el = document.createElement("div");
-                    //childView.$(".placeholder").append(el);
-                    let el = childView.$(".placeholder")[0];
                     controller.createView({
                         model: child,
                         controller: this.getOption("controller"),
                     }).then(view => {
+                        let el = childView.$(".placeholder")[0];
                         view.setElement(el);
                         view.render();
                     });
@@ -224,7 +222,7 @@ define("app/controls/ol3-control", ["require", "exports", "openlayers", "undersc
     class View extends controls_view_3.ControlView {
         constructor() {
             super(...arguments);
-            this.template = _.template(`<div class="ol-control" style="position:inherit"></div>`);
+            this.template = _.template(`<div class="ol-control"></div>`);
         }
         onRender() {
             let map = this.getOption("controller").model.get("map");
@@ -297,9 +295,9 @@ define("app/views/map-view", ["require", "exports", "openlayers", "backbone.mari
             let positionName = controlView.getOption("position") || "top-1 left-1";
             let positionCss = "." + positionName.split(" ").join(" .");
             let controlsDom = this.$(`.map-controls`);
-            let controlDom = $(`ol-control ${controlView.id} ${positionCss}`, controlsDom);
+            let controlDom = $(`map-control ${controlView.id} ${positionCss}`, controlsDom);
             if (!controlDom.length) {
-                let controlDom = $(`<div class="ol-control ${positionName}"></div>`)[0];
+                let controlDom = $(`<div class="map-control ${positionName}"></div>`)[0];
                 controlsDom.append(controlDom);
                 controlView.$el.appendTo(controlDom);
                 let control = new openlayers_2.default.control.Control({
@@ -399,6 +397,45 @@ define("app/test/index", ["require", "exports", "backbone", "app/views/map-view"
         controlViews.forEach(controlView => {
             mapView.addControl(controlView);
         });
+    }
+    return run;
+});
+define("app/test/simple", ["require", "exports", "underscore", "backbone.marionette"], function (require, exports, underscore_1, backbone_marionette_4) {
+    "use strict";
+    underscore_1 = __importDefault(underscore_1);
+    backbone_marionette_4 = __importDefault(backbone_marionette_4);
+    class ParentView extends backbone_marionette_4.default.View {
+        constructor(options = {}) {
+            options = underscore_1.default.defaults(options, {
+                tagName: "h1",
+                template: underscore_1.default.template(`<label>Hello <placeholder/>!</label>`),
+                regions: {
+                    "placeholder": {
+                        el: "placeholder",
+                        replaceElement: true,
+                    }
+                }
+            });
+            super(options);
+        }
+    }
+    class ChildView extends backbone_marionette_4.default.View {
+        constructor(options = {}) {
+            options = underscore_1.default.defaults(options, {
+                tagName: "b",
+                template: underscore_1.default.template(`World`),
+            });
+            super(options);
+        }
+    }
+    function run() {
+        let parentElement = document.createElement("div");
+        document.body.appendChild(parentElement);
+        let parentView = new ParentView({
+            el: parentElement
+        });
+        let childView = new ChildView();
+        parentView.getRegion("placeholder").show(childView);
     }
     return run;
 });

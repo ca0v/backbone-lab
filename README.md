@@ -7,4 +7,4 @@ Goal is to use deferred loading so custom views can load via AMD.
 
 
 ## All Examples
-* [master](https://rawgit.com/ca0v/backbone-lab/master/rawgit.html)
+* [master](https://rawgit.com/ca0v/backbone-lab/master/rawgit.html?run=app/test/simple)

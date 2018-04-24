@@ -4,7 +4,7 @@ import { ControlView } from "../views/controls-view";
 import { Controller } from "./base-control";
 
 class View extends ControlView {
-    template = _.template(`<div class="ol-control" style="position:inherit"></div>`);
+    template = _.template(`<div class="ol-control"></div>`);
 
     onRender() {
         let map = this.getOption("controller").model.get("map") as ol.Map;
