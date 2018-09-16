@@ -53,7 +53,6 @@ export class MapView extends Marionette.View<any> {
 			let control = new ol.control.Control({
 				element: controlDom,
 				render: (event: ol.MapEvent) => {
-					console.log("event", event);
 					controlView.trigger("event", event);
 				},
 				target: undefined

@@ -1,0 +1,8 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"declaration": false,
+		"outFile": "../built/examples.max.js"
+	},
+	"include": ["index.ts"]
+}

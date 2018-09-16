@@ -14,11 +14,6 @@ class View extends ControlView {
 
 		events.forEach(event => {
 			this.channel.on(event, () => alert(event));
-			this.on(event.split("-").join(""), () => alert(`fired: ${event}`)); // does not work
-		});
-
-		this.on("tick", (...args: []) => {
-			console.log("ags-tool", args);
 		});
 	}
 
