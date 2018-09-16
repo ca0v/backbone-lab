@@ -13,8 +13,17 @@ define("app/models/command-model", ["require", "exports", "backbone"], function 
         get id() {
             return this.get("id");
         }
-        get Options() {
-            return this.get("Options");
+        get options() {
+            let v = this.get("Options");
+            return (v && v.Values);
+        }
+        getOption(id) {
+            let options = this.options;
+            if (options) {
+                let value = options.find(n => n.id === id);
+                return value && value.value;
+            }
+            return undefined;
         }
     }
     exports.CommandModel = CommandModel;
@@ -65,7 +74,7 @@ define("app/models/control-model", ["require", "exports", "backbone"], function 
     }
     exports.ControlCollection = ControlCollection;
 });
-define("app/views/commands-view", ["require", "exports", "underscore", "backbone.marionette"], function (require, exports, _, backbone_marionette_1) {
+define("app/views/commands-view", ["require", "exports", "backbone.marionette"], function (require, exports, backbone_marionette_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     backbone_marionette_1 = __importDefault(backbone_marionette_1);
@@ -79,14 +88,32 @@ define("app/views/commands-view", ["require", "exports", "underscore", "backbone
     class CommandView extends backbone_marionette_1.default.View {
         constructor() {
             super(...arguments);
-            this.template = _.template(`<input type="button" class="command <%= id %>" value="<%= id %>" />`);
+            this.template = () => `<input type="button" class="command ${this.model.get("id")}" value="${this.model.get("text")}" title="${this.model.get("id")}"/>`;
+        }
+        events() {
+            return {
+                "click .command": "click"
+            };
+        }
+        initialize() {
+            this.listenTo(this.model, "change", () => this.render());
+        }
+        render() {
+            // how to associte the command button with a handler
+            return super.render();
+        }
+        click() {
+            let event = this.model.getOption("event") || this.model.get("id");
+            this.trigger("execute", { event });
         }
     }
     exports.CommandView = CommandView;
 });
-define("app/views/controls-view", ["require", "exports", "underscore", "backbone.marionette", "app/views/commands-view"], function (require, exports, _, backbone_marionette_2, commands_view_1) {
+define("app/views/controls-view", ["require", "exports", "underscore", "backbone.radio", "backbone.marionette", "app/views/commands-view"], function (require, exports, underscore_1, backbone_radio_1, backbone_marionette_2, commands_view_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    underscore_1 = __importDefault(underscore_1);
+    backbone_radio_1 = __importDefault(backbone_radio_1);
     backbone_marionette_2 = __importDefault(backbone_marionette_2);
     /**
      * Renders a nested control collection using a TreeView
@@ -94,39 +121,48 @@ define("app/views/controls-view", ["require", "exports", "underscore", "backbone
     class ControlView extends backbone_marionette_2.default.View {
         constructor(options = {}) {
             super(options);
-            this.template = _.template(`
-    <div class="control-view <%= id %>">
-        <div class="placeholder"></div>
-        <div class="control-commands"></div>
-        <div class="children"></div>
-    </div>`);
+            this.channel = backbone_radio_1.default.channel("controls-view");
+            this.template = underscore_1.default.template(`
+        <div class="control-view <%= id %>">
+            <div class="placeholder"></div>
+            <div class="control-commands"></div>
+            <div class="children"></div>
+        </div>`);
             this.addRegions({
-                "placeholder": {
+                placeholder: {
                     el: ".placeholder",
-                    replaceElement: true,
+                    replaceElement: true
                 },
-                "commands": {
+                commands: {
                     el: ".control-commands",
-                    replaceElement: false,
+                    replaceElement: false
                 },
-                "children": {
+                children: {
                     el: ".children",
-                    replaceElement: true,
+                    replaceElement: true
                 }
             });
         }
         onRender() {
             let commands = this.model.commands;
             if (commands) {
-                this.showChildView("commands", new commands_view_1.CommandsView({
-                    collection: commands,
-                }));
+                let view = new commands_view_1.CommandsView({
+                    collection: commands
+                });
+                this.showChildView("commands", view);
+                this.listenTo(view, "childview:execute", (args) => {
+                    console.log("childview:execute", args);
+                    this.trigger(args.event); // is not received
+                    // I can trigger here but never see it in a derived view?
+                    setInterval(() => this.trigger("tick", new Date()), 1000);
+                    this.channel.trigger(args.event); // workaround to triggerMethod not working
+                });
             }
             let controls = this.model.controls;
             if (controls) {
                 this.showChildView("children", new ControlsView({
                     collection: controls,
-                    controller: this.getOption("controller"),
+                    controller: this.getOption("controller")
                 }));
             }
         }
@@ -146,17 +182,19 @@ define("app/views/controls-view", ["require", "exports", "underscore", "backbone
         }
         buildChildView(child, childViewClass, childViewOptions) {
             // the child "mid" can be instantiated and rendered inside this placeholder-view
-            let childView = new childViewClass(_.extend({
+            let childView = new childViewClass(underscore_1.default.extend({
                 controller: this.getOption("controller"),
                 model: child
             }, childViewOptions));
             let mid = child.mid;
             if (mid) {
                 requirejs([mid], (controller) => {
-                    controller.createView({
+                    controller
+                        .createView({
                         model: child,
-                        controller: this.getOption("controller"),
-                    }).then(view => {
+                        controller: this.getOption("controller")
+                    })
+                        .then(view => {
                         let el = childView.$(".placeholder")[0];
                         view.setElement(el);
                         view.render();
@@ -194,12 +232,26 @@ define("app/controls/base-control", ["require", "exports"], function (require, e
     }
     exports.Controller = Controller;
 });
-define("app/controls/ags-geoquery-form-tool", ["require", "exports", "underscore", "app/views/controls-view", "app/controls/base-control"], function (require, exports, _, controls_view_1, base_control_1) {
+define("app/controls/ags-geoquery-form-tool", ["require", "exports", "app/views/controls-view", "app/controls/base-control"], function (require, exports, controls_view_1, base_control_1) {
     "use strict";
     class View extends controls_view_1.ControlView {
-        constructor() {
-            super(...arguments);
-            this.template = _.template("<div><label>AGS-GEOQUERY-FORM</label></div>");
+        constructor(options) {
+            super(options);
+            this.template = () => `
+        <div>
+        <label title="${this.model.getOption("url")}">AGS-GEOQUERY-FORM</label>
+        </div>`;
+            let events = this.model.commands.map(c => c.getOption("event") || c.get("id"));
+            events.forEach(event => {
+                this.channel.on(event, () => alert(event));
+                this.on(event.split("-").join(""), () => alert(`fired: ${event}`)); // does not work
+            });
+            this.on("tick", (...args) => {
+                console.log("ags-tool", args);
+            });
+        }
+        render() {
+            return super.render();
         }
     }
     let controller = new base_control_1.Controller({ view: View });
@@ -271,7 +323,7 @@ define("app/views/map-view", ["require", "exports", "openlayers", "backbone.mari
         }
         onRender() {
             let mapDom = this.el;
-            let map = this.map = new openlayers_2.default.Map({
+            let map = (this.map = new openlayers_2.default.Map({
                 target: mapDom,
                 view: new openlayers_2.default.View({
                     center: this.model.get("center"),
@@ -281,10 +333,13 @@ define("app/views/map-view", ["require", "exports", "openlayers", "backbone.mari
                 }),
                 layers: [
                     new openlayers_2.default.layer.Tile({
-                        source: new openlayers_2.default.source.OSM(),
+                        source: new openlayers_2.default.source.TileDebug({
+                            projection: "EPSG:4326",
+                            tileGrid: openlayers_2.default.tilegrid.createXYZ({ tileSize: 256 })
+                        })
                     })
                 ]
-            });
+            }));
             this.model.set("map", map);
         }
         addControl(controlView) {
@@ -303,10 +358,10 @@ define("app/views/map-view", ["require", "exports", "openlayers", "backbone.mari
                 let control = new openlayers_2.default.control.Control({
                     element: controlDom,
                     render: (event) => {
-                        console.log(event);
+                        console.log("event", event);
                         controlView.trigger("event", event);
                     },
-                    target: undefined,
+                    target: undefined
                 });
                 this.map.addControl(control);
                 controlView.render();
@@ -321,7 +376,297 @@ define("app/views/map-view", ["require", "exports", "openlayers", "backbone.mari
 });
 define("app/test/data/configuration", ["require", "exports"], function (require, exports) {
     "use strict";
-    let data = { "data": { "Map": { "Layers": { "Layers": [{ "Options": { "Values": [{ "id": "layerType", "value": "osm" }, { "id": "layerStyle", "value": "osm" }, { "id": "visible", "value": "true" }] }, "id": "mapquest-osm", "text": "Map Quest", "type": "app/layer-factory/native", "basemap": true, "minlevel": 10, "maxlevel": 20, "disabled": false }] }, "Options": { "Values": [{ "id": "init-zoom", "about": "Zoom into to about 10 block radius", "value": "17" }, { "id": "init-center", "about": "Somewhere in Las Vegas", "value": "-115.2322,36.1822" }, { "id": "max-zoom", "about": "To be moved to VIEWPORT", "value": "19" }, { "id": "min-zoom", "about": "To be moved to VIEWPORT", "value": "10" }, { "id": "default-interactions", "about": "See http://openlayers.org/en/latest/apidoc/ol.interaction.html#.defaults", "value": "{\r\n    \"altShiftDragRotate\": true,\r\n    \"doubleClickZoom\": true,\r\n    \"keyboard\": true,\r\n    \"mouseWheelZoom\": true,\r\n    \"shiftDragZoom\": true,\r\n    \"dragPan\": true,\r\n    \"pinchRotate\": true,\r\n    \"pinchZoom\": true,\r\n    \"zoomDuration\": 500\r\n}" }] } }, "id": "ControlTest", "text": "Minimal Maplet", "Controls": { "Controls": [{ "Controls": { "Controls": [{ "Commands": { "Commands": [{ "id": "geoquery-form-search", "mid": "app/commands/trigger", "text": "↴", "type": "action", "disabled": false, "Options": { "Values": [{ "id": "event", "value": "ags-geoquery-execute" }, { "id": "trace", "value": "true" }, { "id": "title", "value": "Search" }] } }, { "id": "clear-features", "mid": "app/commands/trigger", "text": "✘", "type": "action", "disabled": false, "Options": { "Values": [{ "id": "event", "about": "clear all features (how to clear only the search results?)", "value": "clear-features-from-layer" }, { "id": "trace", "value": "true" }, { "id": "title", "value": "Clear" }] } }] }, "Events": { "Events": [{ "name": "ags-geoquery-execute", "id": "ags-geoquery-processor", "mid": "app/commands/ags-geoquery-processor", "type": "geoquery-result", "disabled": false, "Options": { "Values": [{ "id": "returnGeometry", "value": "true" }, { "id": "returnIdsOnly", "value": "false" }, { "id": "returnCountOnly", "value": "false" }, { "id": "event", "value": "military-features-ready,auto-zoom" }] } }] }, "id": "annotations-search-form", "mid": "app/controls/ags-geoquery-form-tool", "text": "Zones", "disabled": false, "Options": { "Values": [{ "id": "url", "about": "Draw annotation points (would like to support all annotations, ie. remove the /0 in the value)", "value": "https://usalvwdgis1.infor.com/ags/rest/services/ANNOTATIONS/IPS860_ANNOTATIONS/FeatureServer/0" }, { "id": "key-template", "about": "template for rendering a unique key", "value": "<%=OBJECTID%>" }, { "id": "blacklist", "value": "last_edited_user,last_edited_date,created_user,created_date,H8MONIK2,expiration,EXPIRED" }, { "id": "css-name", "value": "panel form-container" }, { "id": "region", "value": "search-form" }] } }] }, "id": "map-controls-top-left", "about": "adds a control to the ol3 map control collection", "mid": "app/controls/map-panel", "disabled": false, "Options": { "Values": [{ "id": "position", "value": "top-1 left-3" }] } }, { "Controls": { "Controls": [{ "id": "Hello", "mid": "app/controls/view", "disabled": false, "Options": { "Values": [{ "id": "template", "value": "app/test/templates/hello-world-template" }, { "id": "model", "value": "app/test/models/hello-world-model" }, { "id": "css-name", "about": "div.panel uses darker background", "value": "panel" }, { "id": "region", "value": "hello-world" }] } }] }, "id": "map-controls-top-right", "about": "adds a control to the ol3 map control collection", "mid": "app/controls/map-panel", "disabled": false, "Options": { "Values": [{ "id": "position", "value": "top-1 right-1" }] } }, { "Controls": { "Controls": [{ "id": "map-scale-line", "about": "scaleline", "mid": "app/controls/ol3-control", "disabled": false, "Options": { "Values": [{ "id": "control-type", "about": "identify the ol3 constructor/class", "value": "ScaleLine" }, { "id": "className", "about": "top-left container", "value": "ol-control ol-scale-line" }, { "id": "units", "about": "Use imperial measurements (degrees, imperial, nautical, metric, us)", "value": "us" }, { "id": "region", "value": "scale-line" }] } }] }, "id": " map-controls-bottom-right", "about": "adds a control to the ol3 map control collection", "mid": "app/controls/map-panel", "disabled": false, "Options": { "Values": [{ "id": "position", "value": "bottom-1 right-3" }] } }, { "Controls": { "Controls": [{ "Commands": { "Commands": [{ "id": "refresh-grid", "mid": "app/commands/trigger", "text": "✘", "type": "action", "disabled": false, "Options": { "Values": [{ "id": "event", "about": "clear all features (how to clear only the search results?)", "value": "refresh-grid" }, { "id": "trace", "value": "true" }, { "id": "title", "value": "Refresh" }, { "id": "debug", "value": "true" }] } }] }, "Controls": { "Controls": [{ "id": "Hello", "mid": "app/controls/view", "disabled": false, "Options": { "Values": [{ "id": "template", "value": "app/test/templates/hello-world-template" }, { "id": "model", "value": "app/test/models/hello-world-model" }, { "id": "css-name", "about": "div.panel uses darker background", "value": "panel" }, { "id": "region", "value": "hello-world" }] } }] }, "id": "hello-world-grid", "about": "Renders the military points data in a grid", "mid": "app/controls/grid", "disabled": false, "Options": { "Values": [{ "id": "region", "value": "results-grid" }, { "id": "model", "value": "app/test/models/hello-world-model" }, { "id": "css-name", "about": "Make this the primary results grid", "value": "panel" }, { "id": "refresh-event", "about": "Refresh the grid each time the map extent changes", "value": "refresh-grid" }] } }] }, "id": "map-controls-bottom-left", "about": "adds a control to the ol3 map control collection", "mid": "app/controls/map-panel", "disabled": false, "Options": { "Values": [{ "id": "position", "value": "bottom-1 left-1" }] } }] }, "Options": { "Values": [{ "id": "css-name", "about": "loads a custom css to manipulate toolbar layout", "value": "rhythm-civics-base" }, { "id": "css", "about": "stylesheet to load for this maplet", "value": "app/css/rhythm-civics-base.css" }, { "id": "template", "about": "Markup for the view and regions", "value": "app/templates/rhythm-gis-template" }, { "id": "region", "about": "Identifies the maplet container", "value": "gis-map-region" }] } }, "href": "http://usgvdcalix2/850rs/api/property/agencymaps/ControlTest" };
+    let data = {
+        data: {
+            Map: {
+                Layers: {
+                    Layers: [
+                        {
+                            Options: {
+                                Values: [
+                                    { id: "layerType", value: "osm" },
+                                    { id: "layerStyle", value: "osm" },
+                                    { id: "visible", value: "true" }
+                                ]
+                            },
+                            id: "mapquest-osm",
+                            text: "Map Quest",
+                            type: "app/layer-factory/native",
+                            basemap: true,
+                            minlevel: 10,
+                            maxlevel: 20,
+                            disabled: false
+                        }
+                    ]
+                },
+                Options: {
+                    Values: [
+                        { id: "init-zoom", about: "Zoom into to about 10 block radius", value: "17" },
+                        { id: "init-center", about: "Somewhere in Las Vegas", value: "-115.2322,36.1822" },
+                        { id: "max-zoom", about: "To be moved to VIEWPORT", value: "19" },
+                        { id: "min-zoom", about: "To be moved to VIEWPORT", value: "10" },
+                        {
+                            id: "default-interactions",
+                            about: "See http://openlayers.org/en/latest/apidoc/ol.interaction.html#.defaults",
+                            value: '{\r\n    "altShiftDragRotate": true,\r\n    "doubleClickZoom": true,\r\n    "keyboard": true,\r\n    "mouseWheelZoom": true,\r\n    "shiftDragZoom": true,\r\n    "dragPan": true,\r\n    "pinchRotate": true,\r\n    "pinchZoom": true,\r\n    "zoomDuration": 500\r\n}'
+                        }
+                    ]
+                }
+            },
+            id: "ControlTest",
+            text: "Minimal Maplet",
+            Controls: {
+                Controls: [
+                    {
+                        Controls: {
+                            Controls: [
+                                {
+                                    Commands: {
+                                        Commands: [
+                                            {
+                                                id: "geoquery-form-search",
+                                                mid: "app/commands/trigger",
+                                                text: "↴",
+                                                type: "action",
+                                                disabled: false,
+                                                Options: {
+                                                    Values: [
+                                                        { id: "event", value: "ags-geoquery-execute" },
+                                                        { id: "trace", value: "true" },
+                                                        { id: "title", value: "Search" }
+                                                    ]
+                                                }
+                                            },
+                                            {
+                                                id: "clear-features",
+                                                mid: "app/commands/trigger",
+                                                text: "✘",
+                                                type: "action",
+                                                disabled: false,
+                                                Options: {
+                                                    Values: [
+                                                        {
+                                                            id: "event",
+                                                            about: "clear all features (how to clear only the search results?)",
+                                                            value: "clear-features-from-layer"
+                                                        },
+                                                        { id: "trace", value: "true" },
+                                                        { id: "title", value: "Clear" }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    Events: {
+                                        Events: [
+                                            {
+                                                name: "ags-geoquery-execute",
+                                                id: "ags-geoquery-processor",
+                                                mid: "app/commands/ags-geoquery-processor",
+                                                type: "geoquery-result",
+                                                disabled: false,
+                                                Options: {
+                                                    Values: [
+                                                        { id: "returnGeometry", value: "true" },
+                                                        { id: "returnIdsOnly", value: "false" },
+                                                        { id: "returnCountOnly", value: "false" },
+                                                        { id: "event", value: "military-features-ready,auto-zoom" }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    id: "annotations-search-form",
+                                    mid: "app/controls/ags-geoquery-form-tool",
+                                    text: "Zones",
+                                    disabled: false,
+                                    Options: {
+                                        Values: [
+                                            {
+                                                id: "url",
+                                                about: "Draw annotation points (would like to support all annotations, ie. remove the /0 in the value)",
+                                                value: "https://usalvwdgis1.infor.com/ags/rest/services/ANNOTATIONS/IPS860_ANNOTATIONS/FeatureServer/0"
+                                            },
+                                            {
+                                                id: "key-template",
+                                                about: "template for rendering a unique key",
+                                                value: "<%=OBJECTID%>"
+                                            },
+                                            {
+                                                id: "blacklist",
+                                                value: "last_edited_user,last_edited_date,created_user,created_date,H8MONIK2,expiration,EXPIRED"
+                                            },
+                                            { id: "css-name", value: "panel form-container" },
+                                            { id: "region", value: "search-form" }
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        id: "map-controls-top-left",
+                        about: "adds a control to the ol3 map control collection",
+                        mid: "app/controls/map-panel",
+                        disabled: false,
+                        Options: { Values: [{ id: "position", value: "top-1 left-3" }] }
+                    },
+                    {
+                        Controls: {
+                            Controls: [
+                                {
+                                    id: "Hello",
+                                    mid: "app/controls/view",
+                                    disabled: false,
+                                    Options: {
+                                        Values: [
+                                            { id: "template", value: "app/test/templates/hello-world-template" },
+                                            { id: "model", value: "app/test/models/hello-world-model" },
+                                            { id: "css-name", about: "div.panel uses darker background", value: "panel" },
+                                            { id: "region", value: "hello-world" }
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        id: "map-controls-top-right",
+                        about: "adds a control to the ol3 map control collection",
+                        mid: "app/controls/map-panel",
+                        disabled: false,
+                        Options: { Values: [{ id: "position", value: "top-1 right-1" }] }
+                    },
+                    {
+                        Controls: {
+                            Controls: [
+                                {
+                                    id: "map-scale-line",
+                                    about: "scaleline",
+                                    mid: "app/controls/ol3-control",
+                                    disabled: false,
+                                    Options: {
+                                        Values: [
+                                            {
+                                                id: "control-type",
+                                                about: "identify the ol3 constructor/class",
+                                                value: "ScaleLine"
+                                            },
+                                            {
+                                                id: "className",
+                                                about: "top-left container",
+                                                value: "ol-control ol-scale-line"
+                                            },
+                                            {
+                                                id: "units",
+                                                about: "Use imperial measurements (degrees, imperial, nautical, metric, us)",
+                                                value: "us"
+                                            },
+                                            { id: "region", value: "scale-line" }
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        id: " map-controls-bottom-right",
+                        about: "adds a control to the ol3 map control collection",
+                        mid: "app/controls/map-panel",
+                        disabled: false,
+                        Options: { Values: [{ id: "position", value: "bottom-1 right-3" }] }
+                    },
+                    {
+                        Controls: {
+                            Controls: [
+                                {
+                                    Commands: {
+                                        Commands: [
+                                            {
+                                                id: "refresh-grid",
+                                                mid: "app/commands/trigger",
+                                                text: "✘",
+                                                type: "action",
+                                                disabled: false,
+                                                Options: {
+                                                    Values: [
+                                                        {
+                                                            id: "event",
+                                                            about: "clear all features (how to clear only the search results?)",
+                                                            value: "refresh-grid"
+                                                        },
+                                                        { id: "trace", value: "true" },
+                                                        { id: "title", value: "Refresh" },
+                                                        { id: "debug", value: "true" }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    Controls: {
+                                        Controls: [
+                                            {
+                                                id: "Hello",
+                                                mid: "app/controls/view",
+                                                disabled: false,
+                                                Options: {
+                                                    Values: [
+                                                        {
+                                                            id: "template",
+                                                            value: "app/test/templates/hello-world-template"
+                                                        },
+                                                        { id: "model", value: "app/test/models/hello-world-model" },
+                                                        {
+                                                            id: "css-name",
+                                                            about: "div.panel uses darker background",
+                                                            value: "panel"
+                                                        },
+                                                        { id: "region", value: "hello-world" }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    id: "hello-world-grid",
+                                    about: "Renders the military points data in a grid",
+                                    mid: "app/controls/grid",
+                                    disabled: false,
+                                    Options: {
+                                        Values: [
+                                            { id: "region", value: "results-grid" },
+                                            { id: "model", value: "app/test/models/hello-world-model" },
+                                            { id: "css-name", about: "Make this the primary results grid", value: "panel" },
+                                            {
+                                                id: "refresh-event",
+                                                about: "Refresh the grid each time the map extent changes",
+                                                value: "refresh-grid"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        id: "map-controls-bottom-left",
+                        about: "adds a control to the ol3 map control collection",
+                        mid: "app/controls/map-panel",
+                        disabled: false,
+                        Options: { Values: [{ id: "position", value: "bottom-1 left-1" }] }
+                    }
+                ]
+            },
+            Options: {
+                Values: [
+                    {
+                        id: "css-name",
+                        about: "loads a custom css to manipulate toolbar layout",
+                        value: "rhythm-civics-base"
+                    },
+                    { id: "css", about: "stylesheet to load for this maplet", value: "app/css/rhythm-civics-base.css" },
+                    {
+                        id: "template",
+                        about: "Markup for the view and regions",
+                        value: "app/templates/rhythm-gis-template"
+                    },
+                    { id: "region", about: "Identifies the maplet container", value: "gis-map-region" }
+                ]
+            }
+        },
+        href: "http://usgvdcalix2/850rs/api/property/agencymaps/ControlTest"
+    };
     let maplet = data.data;
     return maplet;
 });
@@ -400,15 +745,15 @@ define("app/test/index", ["require", "exports", "backbone", "app/views/map-view"
     }
     return run;
 });
-define("app/test/simple", ["require", "exports", "underscore", "backbone.marionette"], function (require, exports, underscore_1, backbone_marionette_4) {
+define("app/test/simple", ["require", "exports", "underscore", "backbone.marionette"], function (require, exports, underscore_2, backbone_marionette_4) {
     "use strict";
-    underscore_1 = __importDefault(underscore_1);
+    underscore_2 = __importDefault(underscore_2);
     backbone_marionette_4 = __importDefault(backbone_marionette_4);
     class ParentView extends backbone_marionette_4.default.View {
         constructor(options = {}) {
-            options = underscore_1.default.defaults(options, {
+            options = underscore_2.default.defaults(options, {
                 tagName: "h1",
-                template: underscore_1.default.template(`<label>Hello <placeholder/>!</label>`),
+                template: underscore_2.default.template(`<label>Hello <placeholder/>!</label>`),
                 regions: {
                     "placeholder": {
                         el: "placeholder",
@@ -421,9 +766,9 @@ define("app/test/simple", ["require", "exports", "underscore", "backbone.marione
     }
     class ChildView extends backbone_marionette_4.default.View {
         constructor(options = {}) {
-            options = underscore_1.default.defaults(options, {
+            options = underscore_2.default.defaults(options, {
                 tagName: "b",
-                template: underscore_1.default.template(`World`),
+                template: underscore_2.default.template(`World`),
             });
             super(options);
         }

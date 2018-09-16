@@ -1,33 +1,33 @@
 {
-  "name": "backbone-lab",
-  "version": "1.0.0",
-  "description": "",
-  "main": "built/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "watch": "tsc -w",
-    "dev": "live-server --port=5000 --wait=2000 --watch=built/*.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ca0v/backbone-lab.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/ca0v/backbone-lab/issues"
-  },
-  "homepage": "https://github.com/ca0v/backbone-lab#readme",
-  "dependencies": {},
-  "devDependencies": {
-    "@types/backbone.marionette": "^3.3.3",
-    "@types/openlayers": "^4.6.8",
-    "@types/requirejs": "^2.1.31",
-    "backbone": "^1.3.3",
-    "backbone.marionette": "^3.5.1",
-    "live-server": "^1.2.0",
-    "typescript": "^2.8.3",
-    "underscore": "^1.8.3"
-  }
+	"name": "backbone-lab",
+	"version": "1.0.0",
+	"description": "",
+	"main": "built/index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "tsc",
+		"live": "live-server --port=5000 --wait=200 --watch=./built/index.js --open=\"./rawgit.html?debug=1\"",
+		"dev": "npm run build && start npm run live && npm run build -- -w"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ca0v/backbone-lab.git"
+	},
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/ca0v/backbone-lab/issues"
+	},
+	"homepage": "https://github.com/ca0v/backbone-lab#readme",
+	"dependencies": {},
+	"devDependencies": {
+		"@types/backbone.marionette": "^3.3.5",
+		"@types/openlayers": "^4.6.12",
+		"@types/requirejs": "^2.1.31",
+		"backbone": "^1.3.3",
+		"backbone.marionette": "^3.5.1",
+		"live-server": "^1.2.0",
+		"typescript": "^3.0.3",
+		"underscore": "^1.9.1"
+	}
 }
