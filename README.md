@@ -6,4 +6,4 @@ Current purpose is to render nested controls. I will explore the CollectionView 
 
 ## All Examples
 
--   [master](https://rawgit.com/ca0v/backbone-lab/master/loaders/tests.html)
+-   [master](https://rawgit.com/ca0v/backbone-lab/master/loaders/tests.html?theme=dark)
