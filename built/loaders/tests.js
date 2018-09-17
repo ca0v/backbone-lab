@@ -29,7 +29,6 @@
         isRun = false;
     var debug = getParameterByName("debug") === "1";
     var localhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    localhost = false;
     var dark = getParameterByName("theme") === "dark";
     document.body.classList.toggle("dark", dark);
     document.body.classList.toggle("verbose", !localhost);
@@ -75,13 +74,6 @@
                 : "https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.1.3/build/ol"
         },
         packages: [
-            {
-                name: "ceylon",
-                location: localhost
-                    ? "../../node_modules/ceylon/lib/umd"
-                    : "https://unpkg.com/ceylon/lib/umd/ceylon.min",
-                main: "ceylon"
-            },
             {
                 name: "backgrid",
                 location: localhost ? "../../node_modules/backgrid/lib" : "todo",

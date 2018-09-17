@@ -35,7 +35,7 @@
 		"@types/mocha": "^5.2.5",
 		"@types/openlayers": "^4.6.12",
 		"@types/requirejs": "^2.1.31",
-		"ceylon": "https://github.com/ca0v/ceylon/tarball/master",
+		"ceylon": "https://github.com/ca0v/ceylon/tarball/v1.0.0",
 		"live-server": "^1.2.0",
 		"mocha": "^5.2.0",
 		"typescript": "^3.0.3",
