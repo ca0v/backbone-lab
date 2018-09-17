@@ -1,7 +1,7 @@
 import * as Backbone from "backbone";
 import Marionette from "backbone.marionette";
 import Radio from "backbone.radio";
-import * as Back from "backgrid";
+import * as Backgrid from "backgrid";
 import expect from "ceylon";
 
 describe("backbone", () => {
@@ -9,7 +9,7 @@ describe("backbone", () => {
 		expect(Backbone).toExist();
 		expect(Marionette).toExist();
 		expect(Radio).toExist();
-		expect(Back).toExist();
+		expect(Backgrid).toExist();
 	});
 
 	it("ensures backbone API", () => {
