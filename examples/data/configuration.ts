@@ -146,7 +146,7 @@ let data = {
 								Options: {
 									Values: [
 										{ id: "template", value: "app/test/templates/hello-world-template" },
-										{ id: "model", value: "app/test/models/hello-world-model" },
+										{ id: "model", value: "examples/models/hello-world-model" },
 										{ id: "css-name", about: "div.panel uses darker background", value: "panel" },
 										{ id: "region", value: "hello-world" }
 									]
@@ -238,7 +238,7 @@ let data = {
 														id: "template",
 														value: "app/test/templates/hello-world-template"
 													},
-													{ id: "model", value: "app/test/models/hello-world-model" },
+													{ id: "model", value: "examples/models/hello-world-model" },
 													{
 														id: "css-name",
 														about: "div.panel uses darker background",
@@ -257,7 +257,7 @@ let data = {
 								Options: {
 									Values: [
 										{ id: "region", value: "results-grid" },
-										{ id: "model", value: "app/test/models/hello-world-model" },
+										{ id: "model", value: "examples/models/hello-world-model" },
 										{ id: "css-name", about: "Make this the primary results grid", value: "panel" },
 										{
 											id: "refresh-event",

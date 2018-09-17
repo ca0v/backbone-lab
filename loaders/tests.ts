@@ -30,6 +30,7 @@
 
 	let debug = getParameterByName("debug") === "1";
 	let localhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+	localhost = false;
 	let dark = getParameterByName("theme") === "dark";
 
 	document.body.classList.toggle("dark", dark);
@@ -81,7 +82,9 @@
 			}
 		},
 		paths: {
-			backbone: "https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.3.3/backbone-min",
+			backbone: localhost
+				? "../../node_modules/backbone/backbone"
+				: "https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.3.3/backbone-min",
 			"backbone.radio": "https://cdnjs.cloudflare.com/ajax/libs/backbone.radio/2.0.0/backbone.radio.min",
 			"backbone.marionette":
 				"https://cdnjs.cloudflare.com/ajax/libs/backbone.marionette/3.5.1/backbone.marionette.min",
@@ -94,7 +97,9 @@
 		packages: [
 			{
 				name: "ceylon",
-				location: localhost ? "../../node_modules/ceylon/lib/umd" : "todo",
+				location: localhost
+					? "../../node_modules/ceylon/lib/umd"
+					: "https://unpkg.com/ceylon/lib/umd/ceylon.min",
 				main: "ceylon"
 			},
 			{
