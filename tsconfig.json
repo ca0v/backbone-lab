@@ -8,7 +8,7 @@
 		"noImplicitAny": false,
 		"alwaysStrict": true,
 		"esModuleInterop": true,
-		"moduleResolution": "node",
+		"moduleResolution": "classic",
 		"baseUrl": "./node_modules"
 	}
 }

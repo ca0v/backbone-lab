@@ -4,5 +4,5 @@
 		"declaration": false,
 		"outFile": "../built/tests.max.js"
 	},
-	"include": ["./index.ts"]
+	"include": ["./index.ts", "**/*.ts"]
 }

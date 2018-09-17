@@ -24,17 +24,18 @@
 	"homepage": "https://github.com/ca0v/backbone-lab#readme",
 	"dependencies": {
 		"@types/backgrid": "^0.2.31",
+		"backbone": "^1.3.3",
+		"backbone.marionette": "^3.5.1",
 		"backgrid": "^0.3.8",
 		"jquery": "^3.3.1"
 	},
 	"devDependencies": {
 		"@types/backbone.marionette": "^3.3.5",
+		"@types/deep-equal": "^1.0.1",
 		"@types/mocha": "^5.2.5",
 		"@types/openlayers": "^4.6.12",
 		"@types/requirejs": "^2.1.31",
-		"backbone": "^1.3.3",
-		"backbone.marionette": "^3.5.1",
-		"ceylon": "^0.9.1",
+		"ceylon": "https://github.com/ca0v/ceylon/tarball/master",
 		"live-server": "^1.2.0",
 		"mocha": "^5.2.0",
 		"typescript": "^3.0.3",

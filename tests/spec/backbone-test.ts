@@ -2,7 +2,7 @@ import Backbone, { Model } from "backbone";
 import Marionette from "backbone.marionette";
 import Radio from "backbone.radio";
 import * as Backgrid from "backgrid";
-import expect from "ceylon"; // works better in @types?  had to hack the node_modules to get this to work in "classic" mode
+import expect from "ceylon/src/index"; // works better in @types?  had to hack the node_modules to get this to work in "classic" mode
 
 describe("backbone", () => {
 	it("create a backbone model", () => {

@@ -2,7 +2,7 @@ import Backbone from "backbone";
 import Marionette from "backbone.marionette";
 import Radio from "backbone.radio";
 import * as Backgrid from "backgrid";
-import expect from "ceylon";
+import expect from "ceylon/src/index";
 
 describe("backbone", () => {
 	it("ensures modules exist", () => {
