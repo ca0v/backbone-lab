@@ -1,8 +1,14 @@
 {
-	"extends": "../tsconfig.json",
+	"extends": "../tsconfig",
 	"compilerOptions": {
 		"declaration": false,
-		"outFile": "../built/tests.max.js"
+		"strict": false,
+		"outFile": "../built/tests.max.js",
+		"types": ["mocha", "backbone", "backbone.radio", "backbone.marionette"],
+		"typeRoots": ["../@types/backgrid"],
+		"paths": {
+			"backgrid": ["../@types/backgrid/index.d.ts"]
+		}
 	},
 	"include": ["./index.ts", "**/*.ts"]
 }

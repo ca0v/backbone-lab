@@ -1,8 +1,9 @@
 {
-	"extends": "../tsconfig.json",
+	"extends": "../tsconfig",
 	"compilerOptions": {
 		"declaration": false,
-		"outFile": "../built/examples.max.js"
+		"outFile": "../built/examples.max.js",
+		"types": ["requirejs", "backbone.marionette"]
 	},
 	"include": ["./**/**.ts", "../app/**/*.ts"]
 }

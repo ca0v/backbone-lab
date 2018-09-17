@@ -4,11 +4,14 @@
 		"module": "amd",
 		"sourceMap": true,
 		"outFile": "./built/index.js",
-		"strict": true,
-		"noImplicitAny": false,
-		"alwaysStrict": true,
 		"esModuleInterop": true,
+		"strict": true,
+		"noEmitOnError": true,
+		"noEmitHelpers": false,
 		"moduleResolution": "classic",
-		"baseUrl": "./node_modules"
-	}
+		"baseUrl": "./node_modules",
+		"types": ["backbone.marionette"],
+		"typeRoots": ["./@types"]
+	},
+	"include": ["index.ts"]
 }
