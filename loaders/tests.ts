@@ -85,9 +85,12 @@
 			backbone: localhost
 				? "../../node_modules/backbone/backbone"
 				: "https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.3.3/backbone-min",
-			"backbone.radio": "https://cdnjs.cloudflare.com/ajax/libs/backbone.radio/2.0.0/backbone.radio.min",
-			"backbone.marionette":
-				"https://cdnjs.cloudflare.com/ajax/libs/backbone.marionette/3.5.1/backbone.marionette.min",
+			"backbone.radio": localhost
+				? "../../node_modules/backbone.radio/build/backbone.radio"
+				: "https://cdnjs.cloudflare.com/ajax/libs/backbone.radio/2.0.0/backbone.radio.min",
+			"backbone.marionette": localhost
+				? "../../node_modules/backbone.marionette/lib/backbone.marionette"
+				: "https://cdnjs.cloudflare.com/ajax/libs/backbone.marionette/3.5.1/backbone.marionette.min",
 			jquery: "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min",
 			underscore: "https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.0/underscore-min",
 			openlayers: localhost
