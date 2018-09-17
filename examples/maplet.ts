@@ -4,7 +4,7 @@ import Marionette from "backbone.marionette";
 import { MapView } from "../app/views/map-view";
 import { ControlView } from "../app/views/controls-view";
 import { ControlCollection, ControlModel } from "../app/models/control-model";
-import maplet from "./data/configuration";
+import maplet from "./extras/data/configuration";
 import { CommandCollection, CommandModel } from "../app/models/command-model";
 
 type CommandType = {

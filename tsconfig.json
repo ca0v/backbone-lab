@@ -5,13 +5,16 @@
 		"sourceMap": true,
 		"outFile": "./built/index.js",
 		"esModuleInterop": true,
-		"strict": true,
+		"strict": false,
 		"noEmitOnError": true,
 		"noEmitHelpers": false,
 		"moduleResolution": "classic",
 		"baseUrl": "./node_modules",
-		"types": ["backbone.marionette"],
-		"typeRoots": ["./@types"]
+		"types": ["requirejs", "mocha", "backbone", "backbone.radio", "backbone.marionette"],
+		"typeRoots": ["./@types/backgrid"],
+		"paths": {
+			"backgrid": ["../@types/backgrid/index.d.ts"]
+		}
 	},
 	"include": ["index.ts"]
 }

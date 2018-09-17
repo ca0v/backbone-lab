@@ -1,6 +1,77 @@
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+define("examples/datagrid", ["require", "exports", "backbone", "backgrid"], function (require, exports, backbone_1, Backgrid) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    backbone_1 = __importDefault(backbone_1);
+    Backgrid = __importStar(Backgrid);
+    class MyModel extends backbone_1.default.Model {
+    }
+    class MyCollection extends backbone_1.default.Collection {
+        constructor() {
+            super(...arguments);
+            this.model = MyModel;
+            this.url = "../examples/extras/data/backgrid.json";
+        }
+    }
+    function loadCss(options) {
+        if (!options.url && !options.css)
+            throw "must provide either a url or css option";
+        if (options.url && options.css)
+            throw "cannot provide both a url and a css";
+        if (!options.url)
+            throw "css not supported, provide a url option";
+        let id = `style-${options.name}`;
+        let head = document.getElementsByTagName("head")[0];
+        let link = document.getElementById(id);
+        if (!link) {
+            link = document.createElement("link");
+            link.id = id;
+            link.type = "text/css";
+            link.rel = "stylesheet";
+            link.href = options.url;
+            head.appendChild(link);
+        }
+        let dataset = link.dataset;
+        dataset["count"] = parseInt(dataset["count"] || "0") + 1 + "";
+        return () => {
+            dataset["count"] = parseInt(dataset["count"] || "0") - 1 + "";
+            if (dataset["count"] === "0") {
+                link.remove();
+            }
+        };
+    }
+    exports.loadCss = loadCss;
+    function run() {
+        loadCss({ name: "backgrid", url: requirejs.toUrl("backgrid") + "/../backgrid.css" });
+        let parentElement = document.createElement("div");
+        document.body.appendChild(parentElement);
+        let collection = new MyCollection();
+        collection.fetch().then(() => {
+            let fields = ["name", "email"];
+            let columns = fields.map(name => ({
+                name: name,
+                label: name,
+                cell: "string" // this need not be a Backgrid.StringCell
+            }));
+            let grid = new Backgrid.Grid({
+                columns: columns,
+                collection: collection
+            });
+            console.log(collection.models[0].attributes);
+            parentElement.appendChild(grid.render().el);
+        });
+    }
+    exports.run = run;
+});
 define("app/views/map-view", ["require", "exports", "openlayers", "backbone.marionette"], function (require, exports, openlayers_1, backbone_marionette_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -65,11 +136,11 @@ define("app/views/map-view", ["require", "exports", "openlayers", "backbone.mari
     }
     exports.MapView = MapView;
 });
-define("app/models/command-model", ["require", "exports", "backbone"], function (require, exports, backbone_1) {
+define("app/models/command-model", ["require", "exports", "backbone"], function (require, exports, backbone_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    backbone_1 = __importDefault(backbone_1);
-    class CommandModel extends backbone_1.default.Model {
+    backbone_2 = __importDefault(backbone_2);
+    class CommandModel extends backbone_2.default.Model {
         get id() {
             return this.get("id");
         }
@@ -87,7 +158,7 @@ define("app/models/command-model", ["require", "exports", "backbone"], function 
         }
     }
     exports.CommandModel = CommandModel;
-    class CommandCollection extends backbone_1.default.Collection {
+    class CommandCollection extends backbone_2.default.Collection {
         constructor() {
             super(...arguments);
             this.model = CommandModel;
@@ -130,11 +201,11 @@ define("app/views/commands-view", ["require", "exports", "backbone.marionette"],
     }
     exports.CommandView = CommandView;
 });
-define("app/models/control-model", ["require", "exports", "backbone"], function (require, exports, backbone_2) {
+define("app/models/control-model", ["require", "exports", "backbone"], function (require, exports, backbone_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    backbone_2 = __importDefault(backbone_2);
-    class ControlModel extends backbone_2.default.Model {
+    backbone_3 = __importDefault(backbone_3);
+    class ControlModel extends backbone_3.default.Model {
         get id() {
             return this.get("id");
         }
@@ -161,7 +232,7 @@ define("app/models/control-model", ["require", "exports", "backbone"], function 
         }
     }
     exports.ControlModel = ControlModel;
-    class ControlCollection extends backbone_2.default.Collection {
+    class ControlCollection extends backbone_3.default.Collection {
         constructor() {
             super(...arguments);
             this.model = ControlModel;
@@ -266,7 +337,7 @@ define("app/views/controls-view", ["require", "exports", "underscore", "backbone
     }
     exports.ControlsView = ControlsView;
 });
-define("examples/data/configuration", ["require", "exports"], function (require, exports) {
+define("examples/extras/data/configuration", ["require", "exports"], function (require, exports) {
     "use strict";
     let data = {
         data: {
@@ -562,10 +633,10 @@ define("examples/data/configuration", ["require", "exports"], function (require,
     let maplet = data.data;
     return maplet;
 });
-define("examples/maplet", ["require", "exports", "backbone", "app/views/map-view", "app/views/controls-view", "app/models/control-model", "examples/data/configuration", "app/models/command-model"], function (require, exports, backbone_3, map_view_1, controls_view_1, control_model_1, configuration_1, command_model_1) {
+define("examples/maplet", ["require", "exports", "backbone", "app/views/map-view", "app/views/controls-view", "app/models/control-model", "examples/extras/data/configuration", "app/models/command-model"], function (require, exports, backbone_4, map_view_1, controls_view_1, control_model_1, configuration_1, command_model_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    backbone_3 = __importDefault(backbone_3);
+    backbone_4 = __importDefault(backbone_4);
     configuration_1 = __importDefault(configuration_1);
     class MapletConverter {
         asModel() {
@@ -616,7 +687,7 @@ define("examples/maplet", ["require", "exports", "backbone", "app/views/map-view
         document.body.appendChild(mapDom);
         let mapView = new map_view_1.MapView({
             el: mapDom,
-            model: new backbone_3.default.Model({
+            model: new backbone_4.default.Model({
                 zoom: 5,
                 center: [-85, 35]
             })
@@ -678,14 +749,31 @@ define("examples/simple", ["require", "exports", "underscore", "backbone.marione
     }
     exports.run = run;
 });
-define("examples/models/hello-world-model", ["require", "exports", "backbone"], function (require, exports, backbone_4) {
+define("examples/extras/models/hello-world-model", ["require", "exports", "backbone"], function (require, exports, backbone_5) {
     "use strict";
-    backbone_4 = __importDefault(backbone_4);
-    let model = new backbone_4.default.Model({
+    backbone_5 = __importDefault(backbone_5);
+    let model = new backbone_5.default.Model({
         id: 1,
         text: "hello world"
     });
     return model;
+});
+define("app/mediator", ["require", "exports", "backbone", "underscore"], function (require, exports, backbone_6, underscore_3) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    backbone_6 = __importDefault(backbone_6);
+    underscore_3 = __importDefault(underscore_3);
+    class Extensions {
+    }
+    class Mediator {
+        constructor() {
+            this.model = new backbone_6.default.Model();
+            this.events = underscore_3.default.extend({}, backbone_6.default.Events);
+            /// allow ad-hoc associations within the context of this mediator
+            this.extensions = new Extensions();
+        }
+    }
+    exports.Mediator = Mediator;
 });
 define("app/controls/base-control", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -734,13 +822,13 @@ define("app/controls/ags-geoquery-form-tool", ["require", "exports", "app/views/
     let controller = new base_control_1.Controller({ view: View });
     return controller;
 });
-define("app/controls/grid", ["require", "exports", "underscore", "app/views/controls-view", "app/controls/base-control"], function (require, exports, underscore_3, controls_view_3, base_control_2) {
+define("app/controls/grid", ["require", "exports", "underscore", "app/views/controls-view", "app/controls/base-control"], function (require, exports, underscore_4, controls_view_3, base_control_2) {
     "use strict";
-    underscore_3 = __importDefault(underscore_3);
+    underscore_4 = __importDefault(underscore_4);
     class View extends controls_view_3.ControlView {
         constructor(options) {
             super(options);
-            this.template = underscore_3.default.template(`<div class="grid"><label>GRID</label></div>`);
+            this.template = underscore_4.default.template(`<div class="grid"><label>GRID</label></div>`);
             let events = this.model.commands.map(c => c.getOption("event") || c.get("id"));
             events.forEach(event => this.channel.on(event, () => alert(event)));
             let gridModel = this.model.getOption("model");

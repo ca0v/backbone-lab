@@ -99,11 +99,11 @@ define("node_modules/ceylon/src/assertion-error", ["require", "exports"], functi
     function default_1({ message, expected, actual, showDiff }) {
         const error = new Error(message);
         // Properties used by Mocha and other frameworks to show errors
-        error['expected'] = expected;
-        error['actual'] = actual;
-        error['showDiff'] = showDiff;
+        error["expected"] = expected;
+        error["actual"] = actual;
+        error["showDiff"] = showDiff;
         // Set the error name to an AssertionError
-        error.name = 'AssertionError';
+        error.name = "AssertionError";
         return error;
     }
     exports.default = default_1;
@@ -1267,7 +1267,7 @@ define("tests/spec/api", ["require", "exports", "backbone", "backbone.marionette
         });
     });
 });
-define("tests/spec/backbone-test", ["require", "exports", "backbone", "node_modules/ceylon/src/index"], function (require, exports, backbone_2, index_3) {
+define("tests/spec/backbone-test", ["require", "exports", "backbone", "node_modules/ceylon/index"], function (require, exports, backbone_2, index_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     backbone_2 = __importStar(backbone_2);
