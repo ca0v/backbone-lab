@@ -29,6 +29,7 @@
         isRun = false;
     var debug = getParameterByName("debug") === "1";
     var localhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    localhost = localhost && getParameterByName("localhost") !== "0";
     var dark = getParameterByName("theme") === "dark";
     document.body.classList.toggle("dark", dark);
     document.body.classList.toggle("verbose", !localhost);
@@ -76,7 +77,9 @@
         packages: [
             {
                 name: "backgrid",
-                location: localhost ? "../../node_modules/backgrid/lib" : "todo",
+                location: localhost
+                    ? "../../node_modules/backgrid/lib"
+                    : "https://cdn.rawgit.com/cloudflare/backgrid/0.3.8/lib",
                 main: "backgrid"
             },
             {
@@ -107,7 +110,14 @@
                     for (var _i = 0; _i < arguments.length; _i++) {
                         tests[_i] = arguments[_i];
                     }
-                    return tests.forEach(function (test) { return test.run(); });
+                    return tests.forEach(function (test) {
+                        if (test.run) {
+                            test.run();
+                        }
+                        else {
+                            document.writeln(Object.keys(test).join("<br/>"));
+                        }
+                    });
                 });
             }
             if (isTest) {

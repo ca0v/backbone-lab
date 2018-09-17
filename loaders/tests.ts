@@ -30,6 +30,7 @@
 
 	let debug = getParameterByName("debug") === "1";
 	let localhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+	localhost = localhost && getParameterByName("localhost") !== "0";
 	let dark = getParameterByName("theme") === "dark";
 
 	document.body.classList.toggle("dark", dark);
@@ -96,7 +97,9 @@
 		packages: [
 			{
 				name: "backgrid",
-				location: localhost ? "../../node_modules/backgrid/lib" : "todo",
+				location: localhost
+					? "../../node_modules/backgrid/lib"
+					: "https://cdn.rawgit.com/cloudflare/backgrid/0.3.8/lib",
 				main: "backgrid"
 			},
 			{
@@ -122,7 +125,15 @@
 					map.className = map.id = "map";
 					document.body.appendChild(map);
 				}
-				requirejs(testNames.split(","), (...tests) => tests.forEach(test => test.run()));
+				requirejs(testNames.split(","), (...tests) =>
+					tests.forEach(test => {
+						if (test.run) {
+							test.run();
+						} else {
+							document.writeln(Object.keys(test).join("<br/>"));
+						}
+					})
+				);
 			}
 			if (isTest) {
 				let testNames = getParameterByName("test") || "*";
