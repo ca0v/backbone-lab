@@ -45,7 +45,7 @@
     loadCss(localhost ? "../node_modules/mocha/mocha.css" : "https://cdnjs.cloudflare.com/ajax/libs/mocha/5.2.0/mocha.css");
     loadCss(localhost
         ? "../../static/ol/v5.1.3/ol.css"
-        : "https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.1.3/css/ol.css");
+        : "https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io/en/v5.1.3/css/ol.css");
     if (isTest) {
         cssin("map, .map { position: initial; width: 400px; height: 400px; border: 1px solid black;}");
     }
@@ -83,7 +83,7 @@
                 name: "backgrid",
                 location: localhost
                     ? "../../node_modules/backgrid/lib"
-                    : "https://cdn.rawgit.com/cloudflare/backgrid/0.3.8/lib",
+                    : "https://cdn.jsdelivr.net/gh/cloudflare/backgrid@0.3.8/lib",
                 main: "backgrid"
             },
             {

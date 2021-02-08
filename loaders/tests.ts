@@ -52,7 +52,7 @@
 	loadCss(
 		localhost
 			? "../../static/ol/v5.1.3/ol.css"
-			: "https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.1.3/css/ol.css"
+			: "https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io/en/v5.1.3/css/ol.css"
 	);
 
 	if (isTest) {
@@ -102,7 +102,7 @@
 				name: "backgrid",
 				location: localhost
 					? "../../node_modules/backgrid/lib"
-					: "https://cdn.rawgit.com/cloudflare/backgrid/0.3.8/lib",
+					: "https://cdn.jsdelivr.net/gh/cloudflare/backgrid@0.3.8/lib",
 				main: "backgrid"
 			},
 			{
